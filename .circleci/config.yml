@@ -7,8 +7,14 @@ jobs:
       - image: cimg/ruby:2.7.4
     steps:
       - checkout
+      - restore_cache:
+          key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
       - run:
           command: bundle install
+      - save_cache:
+          key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
       - run:
           command: bundle exec rubocop
   test-rspec:
@@ -16,11 +22,16 @@ jobs:
     docker:
       - image: cimg/ruby:2.7.4
     steps:
+      - checkout
+      - restore_cache:
+          key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+      - run:
+          command: bundle install
       - run:
           command: bundle exec rspec
 
 workflows:
-  exercise1:
+  exercise2:
     jobs:
       - test-rubocop
       - test-rspec:
