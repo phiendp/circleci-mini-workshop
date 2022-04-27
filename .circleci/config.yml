@@ -1,12 +1,14 @@
 version: 2.1
 
-jobs:
-  test-rubocop:
+executors:
+  ruby-274:
     working_directory: ~/holistics
     docker:
       - image: cimg/ruby:2.7.4
+
+commands:
+  bundle_install:
     steps:
-      - checkout
       - restore_cache:
           key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
       - run:
@@ -15,23 +17,25 @@ jobs:
           key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+
+jobs:
+  test-rubocop:
+    executor: ruby-274
+    steps:
+      - checkout
+      - bundle_install
       - run:
           command: bundle exec rubocop
   test-rspec:
-    working_directory: ~/holistics
-    docker:
-      - image: cimg/ruby:2.7.4
+    executor: ruby-274
     steps:
       - checkout
-      - restore_cache:
-          key: gem-cache-v1-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
-      - run:
-          command: bundle install
+      - bundle_install
       - run:
           command: bundle exec rspec
 
 workflows:
-  exercise2:
+  exercise3:
     jobs:
       - test-rubocop
       - test-rspec:
